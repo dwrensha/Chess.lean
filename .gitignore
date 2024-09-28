@@ -1,1 +1,5 @@
 /.lake
+
+# virtual environment for the guess_next_move Tactic
+
+/scripts/venv
