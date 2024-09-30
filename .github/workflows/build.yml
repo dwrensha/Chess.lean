@@ -74,4 +74,4 @@ jobs:
       - name: Build package
         run: |
           lake build Chess
-          lake build NextMove
+          lake build Chess.NextMoveExamples
