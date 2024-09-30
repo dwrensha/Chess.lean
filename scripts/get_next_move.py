@@ -27,7 +27,7 @@ def get_pip_executable():
     if os.name == 'nt':
         return os.path.join(VENV_DIR, 'Scripts', 'pip.exe')
     else:
-        return os.path.join(VENV_DIR, 'bin', 'pip')
+        return os.path.join(VENV_DIR, 'bin', 'pip3')
 
 def create_virtualenv(venv_path):
     """Creates a virtual environment if it doesn't exist."""
