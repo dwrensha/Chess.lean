@@ -1,6 +1,5 @@
 import Chess.Basic
 import Chess.Tactics
-import Chess.NextMoveTactic
 import Chess.Widgets
 
 
@@ -77,56 +76,6 @@ theorem smothered_mate :
     opponent_move
     move "Nf7"
     checkmate
-
-
-theorem smothered_mate' :
-    ForcedWin .white
-      ╔════════════════╗
-      ║▓▓░░▓▓░░♜]░░▓▓♚]║
-      ║♟]▓▓♟]♖]♙]▓▓♟]♟]║
-      ║▓▓░░♟]░░▓▓░░▓▓░░║
-      ║░░▓▓░░▓▓░░♟]♘]▓▓║
-      ║▓▓░░♕]░░▓▓░░♞]░░║
-      ║♛]▓▓░░▓▓░░▓▓♙]▓▓║
-      ║♙]░░▓▓░░♙]♙]▓▓♙]║
-      ║░░▓▓░░▓▓░░▓▓♔}▓▓║
-      ╚════════════════╝ := by
-  with_panel_widgets [ForcedWinWidget]
-    guess_next_move
-    opponent_move
-    guess_next_move
-    opponent_move
-    guess_next_move
-    opponent_move
-    guess_next_move
-    checkmate
-
-
-
-/-
-set_option maxHeartbeats 3000000 in
-theorem emms115 :
-    ForcedWin .white
-      ╔════════════════╗
-      ║♚]▓▓░░▓▓░░▓▓░░♜]║
-      ║♟]♝]♗]♘]▓▓░░♟]♟]║
-      ║░░▓▓░░▓▓░░▓▓░░▓▓║
-      ║♙]░░♞]░░▓▓░░▓▓░░║
-      ║░░♝]♙]▓▓░░▓▓░░▓▓║
-      ║▓▓♙]▓▓░░▓▓░░♙]░░║
-      ║░░▓▓░░♜]░░♙]♗]♙]║
-      ║♖]░░▓▓░░▓▓♖]♔}░░║
-      ╚════════════════╝ := by
-  move "Nb6"
-  opponent_move
-  move "a×b6"
-  opponent_move
-  · sorry
-  · sorry
-  · sorry
-  · sorry
-  · sorry
--/
 
 /-
 set_option maxHeartbeats 3000000 in

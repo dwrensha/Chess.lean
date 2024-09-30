@@ -72,4 +72,6 @@ jobs:
         run: lake exe cache get
 
       - name: Build package
-        run: lake build Chess
+        run: |
+          lake build Chess
+          lake build NextMove

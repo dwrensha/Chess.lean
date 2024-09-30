@@ -32,6 +32,16 @@ def get_pip_executable():
 def create_virtualenv(venv_path):
     """Creates a virtual environment if it doesn't exist."""
     if not os.path.isdir(venv_path):
+        try:
+            venv.create(venv_path, with_pip=True)
+        except SystemExit as e:
+            print("Failed to create virtual environment.", file=sys.stderr)
+            print("It seems the `python-venv` package is missing.", file=sys.stderr)
+            if sys.platform == 'linux':
+                print("Try installing it using:", file=sys.stderr)
+                print("  sudo apt-get install python3-venv", file=sys.stderr)
+            print(e, file=sys.stderr)
+            sys.exit(2)
         venv.create(venv_path, with_pip=True)
 
 def install_package(venv_path, package):
