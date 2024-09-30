@@ -77,33 +77,6 @@ theorem smothered_mate :
     move "Nf7"
     checkmate
 
-
-
-/-
-set_option maxHeartbeats 3000000 in
-theorem emms115 :
-    ForcedWin .white
-      ╔════════════════╗
-      ║♚]▓▓░░▓▓░░▓▓░░♜]║
-      ║♟]♝]♗]♘]▓▓░░♟]♟]║
-      ║░░▓▓░░▓▓░░▓▓░░▓▓║
-      ║♙]░░♞]░░▓▓░░▓▓░░║
-      ║░░♝]♙]▓▓░░▓▓░░▓▓║
-      ║▓▓♙]▓▓░░▓▓░░♙]░░║
-      ║░░▓▓░░♜]░░♙]♗]♙]║
-      ║♖]░░▓▓░░▓▓♖]♔}░░║
-      ╚════════════════╝ := by
-  move "Nb6"
-  opponent_move
-  move "a×b6"
-  opponent_move
-  · sorry
-  · sorry
-  · sorry
-  · sorry
-  · sorry
--/
-
 /-
 set_option maxHeartbeats 3000000 in
 theorem emms_140 :
