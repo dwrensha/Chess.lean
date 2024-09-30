@@ -1,0 +1,75 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+name: lake build
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell || 'sh' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Build on Ubuntu
+            os: ubuntu-latest
+          - name: Build on macOS
+            os: macos-latest
+          - name: Build on Windows
+            os: windows-latest
+            shell: msys2 {0}
+    steps:
+      - name: Install MSYS2 (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit
+          install: curl unzip python
+
+      - name: Install elan
+        shell: bash
+        run: |
+          curl -sSfLO https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh
+          chmod +x elan-init.sh
+          ./elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - uses: actions/checkout@v4
+
+      - name: Install Stockfish (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y stockfish
+
+      - name: Install Stockfish (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install stockfish
+
+      - name: Install Stockfish (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install stockfish -y
+          # Set STOCKFISH_BIN environment variable
+          STOCKFISH_EXE="C:/Program Files/ChessEngines/stockfish_16/stockfish-windows-x86-64-avx2.exe"
+          echo "STOCKFISH_BIN=$STOCKFISH_EXE" >> $GITHUB_ENV
+
+      - name: Debug get_next_move.py
+        if: matrix.os == 'windows-latest'
+        env:
+          STOCKFISH_BIN: ${{ env.STOCKFISH_BIN }}
+        run: |
+          python scripts/get_next_move.py '4r2k/p1pRPNpp/2p5/5p2/2Q3n1/q5P1/P3PP1P/6K1 b - - 0 0'
+
+      - name: Get Cache
+        run: lake exe cache get
+
+      - name: Build package
+        run: lake build Chess
