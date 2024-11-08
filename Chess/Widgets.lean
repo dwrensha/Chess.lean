@@ -14,7 +14,7 @@ structure ChessPositionWidgetProps where
 
 open ProofWidgets
 
-@[widget]
+@[widget_module]
 def ChessPositionWidget : Component ChessPositionWidgetProps where
   javascript := "
 import * as React from 'react';
