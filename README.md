@@ -1,5 +1,9 @@
 # Chess in Lean 4
 
+This is an (incomplete) implementation of chess in the Lean 4 theorem prover.
+
+It was originally developed as part of https://github.com/dwrensha/animate-lean-proofs.
+
 ## Usage
 
 See [Examples.lean](./Chess/Examples.lean)
@@ -24,7 +28,10 @@ theorem morphy_mates_in_two :
 
 ## Dependencies
 
-If you plan to use the `get_next_move` tactic then you need a working python setup, including `python3-venv` and have a stockfish executable available.
+If you plan to use the `get_next_move` tactic then you need:
+
+ * a working python setup, including `python3-venv`
+ * a stockfish executable
 
 ### Linux
 ```bash
@@ -42,4 +49,4 @@ Download a suitable binary here: https://stockfishchess.org/download/, identify 
 ```
 STOCKFISH_BIN=[path to stockfish binary]
 ```
-Originally developed as part of https://github.com/dwrensha/animate-lean-proofs.
+
