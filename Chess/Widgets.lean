@@ -6,7 +6,7 @@ import ProofWidgets.Component.PenroseDiagram
 import ProofWidgets.Component.OfRpcMethod
 import ProofWidgets.Component.Panel.Basic
 
-/-! ## Example use of string diagram widgets -/
+/-! ## Widgets for chess -/
 
 
 structure ChessPositionWidgetProps where
