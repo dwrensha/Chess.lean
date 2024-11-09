@@ -1,8 +1,5 @@
 import Lean
-import Mathlib.Data.List.Basic
-import Mathlib.Tactic.CasesM
 import Lean.Data.Json.FromToJson
-
 
 declare_syntax_cat chess_square
 declare_syntax_cat horizontal_border

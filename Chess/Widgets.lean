@@ -3,6 +3,7 @@ import Chess.Fen
 import ProofWidgets.Component.Basic
 import ProofWidgets.Data.Html
 import ProofWidgets.Component.PenroseDiagram
+import ProofWidgets.Component.OfRpcMethod
 import ProofWidgets.Component.Panel.Basic
 
 /-! ## Example use of string diagram widgets -/
