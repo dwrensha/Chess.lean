@@ -12,4 +12,4 @@ package "Chess" where
 lean_lib «Chess» where
   -- add library configuration options here
 
-require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.14.0"
+require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.15.0"
