@@ -58,7 +58,7 @@ jobs:
         run: |
           choco install stockfish -y
           # Set STOCKFISH_BIN environment variable
-          STOCKFISH_EXE="C:/Program Files/ChessEngines/stockfish_16/stockfish-windows-x86-64-avx2.exe"
+          STOCKFISH_EXE="C:/Program Files/ChessEngines/stockfish_17.1/stockfish-windows-x86-64-avx2.exe"
           echo "STOCKFISH_BIN=$STOCKFISH_EXE" >> $GITHUB_ENV
 
       - name: Debug get_next_move.py
