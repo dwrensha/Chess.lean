@@ -832,3 +832,19 @@ inductive ForcedWin : Side → Position → Prop where
 def make_move (pos : Position) (cm : ChessMove) : Option Position :=
   let mvs := valid_moves pos
   (mvs.find? (·.fst = cm)).map (·.snd)
+
+/--
+ `IsReachable pos` means that the position `pos` can be reached from the
+ starting position by a sequence of legal moves.
+-/
+inductive IsReachable : Position → Prop where
+| start : IsReachable game_start
+| move (p : Position) (m : ChessMove) (p1 : Position) :
+    IsReachable p → (m, p1) ∈ valid_moves p → IsReachable p1
+
+theorem game_start_reachable : IsReachable game_start := IsReachable.start
+
+theorem pos2_reachable : IsReachable pos2 := by
+  apply IsReachable.move game_start <| (ChessMove.ofString "e4").get!
+  · exact game_start_reachable
+  · decide
