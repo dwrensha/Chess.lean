@@ -13,7 +13,9 @@ elab_rules : tactic | `(tactic| move $t:term) => withMainContext do
   let goal_type ← whnfR (← g.getType)
   let .app (.app (.const ``ForcedWin _) side) pos := goal_type
     | throwError "'move' tactic expects ForcedWin goal"
-  -- TODO throw error if side does not equal pos.turn
+  let posTurn ← whnfR (← mkAppM ``Position.turn #[pos])
+  if not (← Lean.Meta.isExprDefEq side posTurn) then
+    throwError "It is {side}'s turn to move, try to use the `opponent_move` tactic instead of `move`"
   let t ← Lean.Elab.Term.elabTerm t none
   let cm ← whnf (← mkAppM ``ChessMove.ofString #[t])
   let .app (.app (.const ``Option.some _) _) cm := cm
@@ -37,9 +39,10 @@ elab_rules : tactic | `(tactic| opponent_move) => withMainContext do
   let goal_type ← whnfR (← g.getType)
   let .app (.app (.const ``ForcedWin _) side) pos := goal_type
     | throwError "'opponent_move' tactic expects ForcedWin goal"
-  -- TODO throw error if side does not equal pos.turn.other
-
   let pos_stx ← Lean.Elab.Term.exprToSyntax pos
+  let posTurn ← whnfR (← mkAppM ``Position.turn #[pos])
+  if (← Lean.Meta.isExprDefEq side posTurn) then
+    throwError "It is {side}'s turn to move, try to use the `move` tactic instead of `opponent_move`"
   evalTactic (← `(tactic| apply ForcedWin.Opponent $pos_stx))
   evalTactic (← `(tactic| rw [←List.forall_iff_forall_mem]))
   evalTactic (← `(tactic| dsimp [do_simple_move, Side.other, Position.set]))
@@ -54,7 +57,9 @@ elab_rules : tactic | `(tactic| checkmate) => withMainContext do
   let goal_type ← whnfR (← g.getType)
   let .app (.app (.const ``ForcedWin _) side) pos := goal_type
     | throwError "'checkmate' tactic expects ForcedWin goal"
-  -- TODO throw error if side does not equal pos.turn.other
+  let posTurn ← whnfR (← mkAppM ``Position.turn #[pos])
+  if (← Lean.Meta.isExprDefEq side posTurn) then
+    throwError "It is {side}'s turn to move, try to use the `move` tactic instead to make a move that checkmates"
 
   let pos_stx ← Lean.Elab.Term.exprToSyntax pos
   evalTactic (← `(tactic| exact ForcedWin.Checkmate $pos_stx (by decide)))
