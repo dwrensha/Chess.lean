@@ -194,11 +194,13 @@ macro_rules
          if tb.size != 8 * 2 || bb.size != 8 * 2 then
            Lean.Macro.throwError "chess board must have 8 columns"
          let rows' ← Array.mapM termOfGameRow rows
-         let turns := (Array.map turnsOfRow rows).toList.join
+         let turns := (Array.map turnsOfRow rows).toList.flatten
          let whiteTurn := turns.contains (.some Side.white)
          let blackTurn := turns.contains (.some Side.black)
          if whiteTurn ∧ blackTurn then
            Lean.Macro.throwError "cannot be both white's turn and black's turn"
+         if ¬ whiteTurn ∧ ¬ blackTurn then
+           Lean.Macro.throwError "it must be either white's turn or black's turn"
          if whiteTurn
          then
            `(Position.mk [$rows',*] .white)
