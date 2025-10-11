@@ -29,6 +29,7 @@ syntax "♛]" : chess_square -- black queen
 syntax "♚]" : chess_square -- black king
 
 syntax "░░" : chess_square -- light square
+syntax "▒▒" : chess_square -- en passant target square
 syntax "▓▓" : chess_square -- dark square
 syntax "♔}" : chess_square -- white king and it's white's move
 syntax "♚}" : chess_square -- black king and it's black's move
@@ -38,7 +39,7 @@ syntax:max game_top_row game_row* game_bottom_row : term
 structure Coords where
   row : Nat
   col : Nat
-deriving DecidableEq, Repr, Inhabited
+deriving DecidableEq, Repr, Inhabited, Lean.ToJson, Lean.FromJson
 
 def Coords.range : List Coords := Id.run do
   let mut result := []
@@ -136,6 +137,9 @@ abbrev Squares := List (List (Option (Piece × Side)))
 structure Position where
   squares : Squares
   turn : Side
+  -- en passant target square, i.e. this is some coordinate when the last move was a pawn
+  -- advance of two squares, going over this coordinate, otherwise it should be none.
+  en_passant : Option Coords
 deriving DecidableEq, Repr, Inhabited,  Lean.ToJson, Lean.FromJson
 
 def Position.get (p : Position) (c : Coords) : Option (Piece × Side) :=
@@ -152,6 +156,7 @@ def Position.set (p : Position) (c : Coords) (s : Option (Piece × Side)) : Posi
 def termOfSquare : Lean.TSyntax `chess_square → Lean.MacroM (Lean.TSyntax `term)
 | `(chess_square| ░░) => `(none)
 | `(chess_square| ▓▓) => `(none)
+| `(chess_square| ▒▒) => `(none)
 | `(chess_square| ♙]) => `(some (Piece.pawn, Side.white))
 | `(chess_square| ♘]) => `(some (Piece.knight, Side.white))
 | `(chess_square| ♗]) => `(some (Piece.bishop, Side.white))
@@ -181,10 +186,15 @@ def turnOfSquare : Lean.TSyntax `chess_square → Option Side
 | `(chess_square| ♚}) => some (Side.black)
 | _ => none
 
+def isEnPassantSquare : Lean.TSyntax `chess_square → Bool
+| `(chess_square| ▒▒) => true
+| _ => false
+
 def turnsOfRow : Lean.TSyntax `game_row → List (Option Side)
 | `(game_row| ║$squares:chess_square*║) =>
       squares.toList.map turnOfSquare
 | _ => []
+
 
 macro_rules
 | `(╔ $tb:horizontal_border* ╗
@@ -201,11 +211,26 @@ macro_rules
            Lean.Macro.throwError "cannot be both white's turn and black's turn"
          if ¬ whiteTurn ∧ ¬ blackTurn then
            Lean.Macro.throwError "it must be either white's turn or black's turn"
+
+         let mut enPassantSquare : Option Coords := none
+         for r in [0:8] do
+           let `(game_row| ║$squares:chess_square*║) := rows[r]! | unreachable!
+           for c in [0:8] do
+             if isEnPassantSquare squares[c]! then
+               if enPassantSquare.isSome then
+                 Lean.Macro.throwError "cannot have more than one en passant square"
+               enPassantSquare := some { row := r, col := c }
+
+         let enPassantTerm ← match enPassantSquare with
+           | some coords => `(some { row := $(Lean.Syntax.mkNumLit (toString coords.row)), col := $(Lean.Syntax.mkNumLit (toString coords.col)) })
+           | none => `(none)
+
          if whiteTurn
          then
-           `(Position.mk [$rows',*] .white)
+           `(Position.mk [$rows',*] .white $enPassantTerm)
          else
-           `(Position.mk [$rows',*] .black)
+           `(Position.mk [$rows',*] .black $enPassantTerm)
+
 
 def syntaxOfSquare (turn : Side) : (Piece × Side) →
   Lean.PrettyPrinter.Delaborator.DelabM (Lean.TSyntax `chess_square)
@@ -298,13 +323,25 @@ partial def extractPosition : Lean.Expr → Lean.MetaM Position
 | exp => do
     let exp': Lean.Expr ← Lean.Meta.reduce exp
     let positionArgs := Lean.Expr.getAppArgs exp'
+    if positionArgs.size != 3 then throwError "Position.mk should have 3 arguments"
     let squaresList := positionArgs[0]!
     let rows ← extractRowList squaresList
     let side ← match positionArgs[1]!.constName! with
                 | `Side.white => pure Side.white
                 | `Side.black => pure Side.black
                 | _ => throwError "unrecognized side"
-    return Position.mk rows side
+    let enPassantExpr := positionArgs[2]!
+    let enPassant ← match enPassantExpr.getAppFn.constName! with
+      | `Option.none => pure none
+      | `Option.some =>
+        let coordsExpr := enPassantExpr.getAppArgs[1]!
+        let rowExpr := coordsExpr.getAppArgs[0]!
+        let colExpr := coordsExpr.getAppArgs[1]!
+        let some row := rowExpr.rawNatLit? | throwError "en passant row is not a nat literal"
+        let some col := colExpr.rawNatLit? | throwError "en passant col is not a nat literal"
+        pure (some { row := row, col := col })
+      | _ => throwError "unrecognized en passant option"
+    return Position.mk rows side enPassant
 
 def delabGameRow : Array (Lean.TSyntax `chess_square) →
     Lean.PrettyPrinter.Delaborator.DelabM (Lean.TSyntax `game_row)
@@ -312,18 +349,21 @@ def delabGameRow : Array (Lean.TSyntax `chess_square) →
 
 def delabPosition : Lean.Expr → Lean.PrettyPrinter.Delaborator.Delab
 | e =>
-  do guard $ e.getAppNumArgs == 2
+  do guard $ e.getAppNumArgs == 3
      let pos ← extractPosition e
      let topBar := Array.mkArray (8 * 2) $ ← `(horizontal_border| ═)
      let lightSquare ← `(chess_square| ░░)
      let darkSquare ← `(chess_square| ▓▓)
+     let enPassantSquare ← `(chess_square| ▒▒)
 
      let mut a : Array (Array (Lean.TSyntax `chess_square)) :=
         Array.ofFn (n := 8) (fun row ↦ Array.ofFn (n := 8)
         (fun col ↦ if (col.val + row.val) % 2 = 0 then darkSquare else lightSquare))
 
      for coords in Coords.range do
-       if let some s := pos.get coords then
+       if pos.en_passant = some coords then
+        a := a.set! coords.row (a[coords.row]!.set! coords.col enPassantSquare)
+       else if let some s := pos.get coords then
          let v ← syntaxOfSquare pos.turn s
          a := a.set! coords.row (a[coords.row]!.set! coords.col v)
        pure ()
@@ -338,9 +378,6 @@ def delabPosition : Lean.Expr → Lean.PrettyPrinter.Delaborator.Delab
   let e ← Lean.PrettyPrinter.Delaborator.SubExpr.getExpr
   let e' ← Lean.Meta.reduce e
   delabPosition e'
-
---set_option linter.hashCommand false
---#widget ChessPositionWidget with { position? := some my_pos : ChessPositionWidgetProps }
 
 def game_start :=
   ╔════════════════╗
@@ -362,12 +399,13 @@ def pos2 :=  ╔════════════════╗
              ║░░▓▓░░▓▓░░▓▓░░▓▓║
              ║▓▓░░▓▓░░▓▓░░▓▓░░║
              ║░░▓▓░░▓▓♙]▓▓░░▓▓║
-             ║▓▓░░▓▓░░▓▓░░▓▓░░║
+             ║▓▓░░▓▓░░▒▒░░▓▓░░║
              ║♙]♙]♙]♙]░░♙]♙]♙]║
              ║♖]♘]♗]♕]♔]♗]♘]♖]║
              ╚════════════════╝
 
---#print pos2
+#eval pos2
+#reduce pos2
 
 -----------------------------------
 -- end (d)elab, start analysis
@@ -615,14 +653,14 @@ def king_is_in_check (pos : Position) (side : Side) : Bool :=
 
 @[reducible]
 def do_simple_move (pos : Position) (src : Coords) (dst : Coords) : Position :=
-  let pos1 := { pos with turn := pos.turn.other }
+  let pos1 := { pos with turn := pos.turn.other, en_passant := none }
   let tmp := pos1.get src
   (pos1.set src none).set dst tmp
 
 @[reducible]
 def do_promote_move (pos : Position) (src : Coords) (dst : Coords)
     (piece: Piece) : Position :=
-  let pos1 := { pos with turn := pos.turn.other }
+  let pos1 := { pos with turn := pos.turn.other, en_passant := none }
   (pos1.set src none).set dst (some (piece, pos.turn))
 
 def simple_pawn_move (dst : Coords) : ChessMove :=
@@ -663,9 +701,11 @@ def white_pawn_moves_from_src (pos : Position) (src : Coords)
       else
         result := (simple_pawn_move dst, do_simple_move pos src dst) :: result
         if src.row = 6 then
-          if let some dst := dst.up then
-            if let none := pos.get dst then
-              result := (simple_pawn_move dst, do_simple_move pos src dst) :: result
+          if let some dst2 := dst.up then
+            if let none := pos.get dst2 then
+              let ep_square := some dst
+              let next_pos := { (do_simple_move pos src dst2) with en_passant := ep_square }
+              result := (simple_pawn_move dst2, next_pos) :: result
   for dst in [src.ul, src.ur].filterMap id do
      -- TODO en passant
      if let some (_, side) := pos.get dst then
@@ -686,9 +726,11 @@ def black_pawn_moves_from_src (pos : Position) (src : Coords)
       else
         result := (simple_pawn_move dst, do_simple_move pos src dst) :: result
         if src.row = 1 then
-          if let some dst := dst.down then
-            if let none := pos.get dst then
-              result := (simple_pawn_move dst, do_simple_move pos src dst) :: result
+          if let some dst2 := dst.down then
+            if let none := pos.get dst2 then
+              let ep_square := some dst
+              let next_pos := { (do_simple_move pos src dst2) with en_passant := ep_square }
+              result := (simple_pawn_move dst2, next_pos) :: result
   for dst in [src.dl, src.dr].filterMap id do
      -- TODO en passant
      if let some (_, side) := pos.get dst then

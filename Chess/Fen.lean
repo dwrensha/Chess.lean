@@ -44,7 +44,7 @@ def positionFromFen (fen : String) : Option Position :=
         let sideToMove := parseSideToMove sideToMoveStr
         -- TODO: Add parsing for
         -- castling, en passant, halfmove clock and fullmove number.
-        some { squares := board, turn := sideToMove }
+        some { squares := board, turn := sideToMove , en_passant := none}
       else
         none
   | _ => none
