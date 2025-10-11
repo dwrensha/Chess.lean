@@ -76,6 +76,25 @@ theorem smothered_mate :
     opponent_move
     move "Nf7"
     checkmate
+/--
+Gunnar Gundersen vs. A H Faul
+1-0 Pietzcker Christmas Tournament Melbourne AUS 1928
+-/
+theorem en_passant_mate :
+    ForcedWin .white
+    ╔════════════════╗
+    ║♜]░░♝]♛]▓▓♜]▓▓░░║
+    ║♟]♟]░░▓▓♞]▓▓░░▓▓║
+    ║▓▓░░▓▓░░♘]░░▒▒♚]║
+    ║░░▓▓░░♟]♙]♟]♟]♙]║
+    ║▓▓♝]▓▓♞]▓▓░░♕]░░║
+    ║░░▓▓♘]▓▓░░▓▓░░▓▓║
+    ║♙]♙]▓▓░░▓▓♙]♙]░░║
+    ║♖]▓▓♗]▓▓♔}▓▓░░♖]║
+    ╚════════════════╝:= by
+  with_panel_widgets [ForcedWinWidget]
+    move "h×g6"
+    checkmate
 
 /-
 set_option maxHeartbeats 3000000 in

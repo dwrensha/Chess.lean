@@ -550,7 +550,7 @@ def ChessMove.ofString : String → Option ChessMove
                           disambiguate_row, disambiguate_col, promote})
 
 #eval (ChessMove.ofString "Qa6×d3").map ToString.toString
---#eval (ChessMove.ofString "e×f5")
+#eval (ChessMove.ofString "e×f5")
 
 ----
 
@@ -706,9 +706,16 @@ def white_pawn_moves_from_src (pos : Position) (src : Coords)
               let ep_square := some dst
               let next_pos := { (do_simple_move pos src dst2) with en_passant := ep_square }
               result := (simple_pawn_move dst2, next_pos) :: result
+
   for dst in [src.ul, src.ur].filterMap id do
-     -- TODO en passant
-     if let some (_, side) := pos.get dst then
+     if pos.en_passant == some dst then
+       -- En passant capture
+       if let some captured_pawn_coords := dst.down then
+         let pos1 := { pos with turn := pos.turn.other, en_passant := none }
+         let pos2 := (pos1.set src none).set dst (pos.get src)
+         let next_pos := pos2.set captured_pawn_coords none
+         result := (capture_pawn_move src dst, next_pos) :: result
+     else if let some (_, side) := pos.get dst then
        if side ≠ pos.turn then
          if dst.row = 0
          then result := (promote_pawn_moves pos src dst).append result
@@ -731,9 +738,16 @@ def black_pawn_moves_from_src (pos : Position) (src : Coords)
               let ep_square := some dst
               let next_pos := { (do_simple_move pos src dst2) with en_passant := ep_square }
               result := (simple_pawn_move dst2, next_pos) :: result
+
   for dst in [src.dl, src.dr].filterMap id do
-     -- TODO en passant
-     if let some (_, side) := pos.get dst then
+     if pos.en_passant == some dst then
+       -- En passant capture
+       if let some captured_pawn_coords := dst.up then
+         let pos1 := { pos with turn := pos.turn.other, en_passant := none }
+         let pos2 := (pos1.set src none).set dst (pos.get src)
+         let next_pos := pos2.set captured_pawn_coords none
+         result := (capture_pawn_move src dst, next_pos) :: result
+     else if let some (_, side) := pos.get dst then
        if side ≠ pos.turn then
          if dst.row = 7
          then result := (promote_pawn_moves pos src dst).append result

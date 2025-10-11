@@ -37,13 +37,13 @@ def parseSideToMove (s : String) : Side :=
 def positionFromFen (fen : String) : Option Position :=
   let parts := fen.splitOn " "
   match parts with
-  | boardStr :: sideToMoveStr :: _ =>
+  | boardStr :: sideToMoveStr :: _CastlingAbilityStr :: EnPassantStr :: _ =>
       let boardRows := boardStr.splitOn "/"
       if boardRows.length = 8 then
         let board := parseFenBoard boardRows
         let sideToMove := parseSideToMove sideToMoveStr
         -- TODO: Add parsing for
-        -- castling, en passant, halfmove clock and fullmove number.
+        -- castling, halfmove clock and fullmove number.
         some { squares := board, turn := sideToMove , en_passant := none}
       else
         none
@@ -95,10 +95,12 @@ def fenFromPosition (pos : Position) : String :=
   fenBoard ++ " " ++ sideToMove ++ " " ++ castling ++ " " ++ enPassant ++ " " ++ halfmoveClock ++ " " ++ fullmoveNumber
 
 -- Example usage:
-def my_pos := (positionFromFen "r3k2r/pp2bppp/2n1pn2/q1bpN3/2B5/4P3/PPP2PPP/RNBQ1RK1 w kq - 4 10").get!
+private def my_pos := (positionFromFen "r3k2r/pp2bppp/2n1pn2/q1bpN3/2B5/4P3/PPP2PPP/RNBQ1RK1 w kq - 4 10").get!
 
 #reduce my_pos
 
 #eval fenFromPosition my_pos
 
 #eval positionFromFen (fenFromPosition my_pos) == some my_pos
+
+private def en_passant_pos := (positionFromFen "1bq1r2/pp2n3/4N2k/3pPppP/1b1n2Q1/2N5/PP3PP1/R1B1K2R w KQ g6 0 15".get!)
