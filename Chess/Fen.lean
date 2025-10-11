@@ -34,6 +34,20 @@ def parseSideToMove (s : String) : Side :=
   | "b" => Side.black
   | _ => Side.white  -- Defaulting to white in case of error
 
+-- Should this go into Basic.lean?
+def parseCoords (s : String) : Option Coords :=
+  if s.length != 2 then none
+  else
+    let file := s.get! ⟨0⟩
+    let rank := s.get! ⟨1⟩
+    if not (is_file file && is_rank rank) then none
+    else
+      some { row := rank_to_row rank, col := file_to_col file }
+
+def parseEnPassant (s : String) : Option Coords :=
+  if s == "-" then none
+  else parseCoords s
+
 def positionFromFen (fen : String) : Option Position :=
   let parts := fen.splitOn " "
   match parts with
@@ -42,9 +56,10 @@ def positionFromFen (fen : String) : Option Position :=
       if boardRows.length = 8 then
         let board := parseFenBoard boardRows
         let sideToMove := parseSideToMove sideToMoveStr
+        let enPassant := parseEnPassant EnPassantStr
         -- TODO: Add parsing for
         -- castling, halfmove clock and fullmove number.
-        some { squares := board, turn := sideToMove , en_passant := none}
+        some { squares := board, turn := sideToMove , en_passant := enPassant}
       else
         none
   | _ => none
@@ -80,6 +95,10 @@ def fenRowFromSquares (row : List (Option (Piece × Side))) : String :=
         aux rest acc (emptyCount + 1)
   aux row "" 0
 
+-- Should this go into Basic.lean?
+def fromCoords (coords : Coords) : String :=
+  (col_to_file coords.col).toString ++ (row_to_rank coords.row).toString
+
 def fenFromPosition (pos : Position) : String :=
   let boardRows := pos.squares
   let fenRows := boardRows.map fenRowFromSquares
@@ -87,9 +106,11 @@ def fenFromPosition (pos : Position) : String :=
   let sideToMove := match pos.turn with
                     | Side.white => "w"
                     | Side.black => "b"
-  -- TODO: handle the following fields
+  -- TODO: handle castling, halfmoveClock and fullmoveNumber
   let castling := "-"
-  let enPassant := "-"
+  let enPassant := match pos.en_passant with
+                     | some coords => fromCoords coords
+                     | none => "-"
   let halfmoveClock := "0"
   let fullmoveNumber := "0"
   fenBoard ++ " " ++ sideToMove ++ " " ++ castling ++ " " ++ enPassant ++ " " ++ halfmoveClock ++ " " ++ fullmoveNumber
@@ -103,4 +124,6 @@ private def my_pos := (positionFromFen "r3k2r/pp2bppp/2n1pn2/q1bpN3/2B5/4P3/PPP2
 
 #eval positionFromFen (fenFromPosition my_pos) == some my_pos
 
-private def en_passant_pos := (positionFromFen "1bq1r2/pp2n3/4N2k/3pPppP/1b1n2Q1/2N5/PP3PP1/R1B1K2R w KQ g6 0 15".get!)
+private def en_passant_pos := (positionFromFen "1bq1r2/pp2n3/4N2k/3pPppP/1b1n2Q1/2N5/PP3PP1/R1B1K2R w KQ g6 0 15").get!
+
+#eval  fenFromPosition en_passant_pos
