@@ -31,7 +31,7 @@ const pieceSymbols = {
 
 // Helper function to determine the square color
 function getSquareColor(row, col) {
-  return (row + col) % 2 === 0 ? '#b58863' : '#f0d9b5';
+  return (row + col) % 2 === 1 ? '#b58863' : '#f0d9b5';
 }
 
 // Chessboard component with inline styles
