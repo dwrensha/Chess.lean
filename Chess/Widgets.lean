@@ -101,9 +101,9 @@ export default function ChessPositionWidget(props) {
 
 open Lean Meta Elab
 
-def get_pos {p : _root_.Position} {side : Side} (_: ForcedWin side p) : _root_.Position := p
+def get_pos {p : _root_.Position} {side : Side} (_: ForcedNotLose side p) : _root_.Position := p
 
-def get_side {p : _root_.Position} {side : Side} (_: ForcedWin side p) : Side := side
+def get_side {p : _root_.Position} {side : Side} (_: ForcedNotLose side p) : Side := side
 
 open ProofWidgets Penrose DiagramBuilderM Lean.Server
 
@@ -116,15 +116,15 @@ private unsafe def evalModuleUnsafe (e : Expr) : MetaM Module :=
 opaque evalModule (e : Expr) : MetaM Module
 
 
-/-- Extracts the position from a goal of type `ForcedWin`. -/
-def extractPositionFromForcedWinGoal (g : MVarId) : MetaM (Option _root_.Position) := do
+/-- Extracts the position from a goal of type `ForcedNotLose`. -/
+def extractPositionFromForcedNotLoseGoal (g : MVarId) : MetaM (Option _root_.Position) := do
   g.withContext do
     -- Get the goal's type
     let type ← g.getType
     -- Extract the function name and arguments using `getAppFnArgs`
     let (fn, args) := type.getAppFnArgs
-    -- Check if the goal is of type `ForcedWin`
-    if fn == ``ForcedWin && args.size == 2 then
+    -- Check if the goal is of type `ForcedNotLose`
+    if fn == ``ForcedNotLose && args.size == 2 then
       -- Extract the `Position` argument
       let posExpr := args[1]!  -- The second argument should be the Position
       -- Try to interpret `posExpr` as a `Position`
@@ -134,7 +134,7 @@ def extractPositionFromForcedWinGoal (g : MVarId) : MetaM (Option _root_.Positio
       return none
 
 open scoped Jsx in
-/-- The RPC method for displaying FEN for ForcedWin (Side → Position → Prop). -/
+/-- The RPC method for displaying FEN for ForcedNotLose (Side → Position → Prop). -/
 @[server_rpc_method]
 def forced_win_rpc (props : PanelWidgetProps) : RequestM (RequestTask Html) :=
   RequestM.asTask do
@@ -144,8 +144,8 @@ def forced_win_rpc (props : PanelWidgetProps) : RequestM (RequestTask Html) :=
       else
         let some g := props.goals[0]? | unreachable!
         g.ctx.val.runMetaM {} do
-          -- Use the extractPositionFromForcedWinGoal function
-          let posOpt ← extractPositionFromForcedWinGoal g.mvarId
+          -- Use the extractPositionFromForcedNotLoseGoal function
+          let posOpt ← extractPositionFromForcedNotLoseGoal g.mvarId
           match posOpt with
           | some posVal =>
             -- Create props for the ChessPositionWidget
@@ -157,13 +157,13 @@ def forced_win_rpc (props : PanelWidgetProps) : RequestM (RequestTask Html) :=
             return some <| combined_html
           | none => return none)
     match html with
-    | none => return <span>No ForcedWin goal found or invalid type.</span>
+    | none => return <span>No ForcedNotLose goal found or invalid type.</span>
     | some inner => return inner
 
 
 end Chess
 
 @[widget_module]
-def ForcedWinWidget :  Component PanelWidgetProps  :=
+def ForcedNotLoseWidget :  Component PanelWidgetProps  :=
     mk_rpc_widget% Chess.forced_win_rpc
 syntax (name := forcedWinWidget) "#forced_win_widget " term : command

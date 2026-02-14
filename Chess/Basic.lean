@@ -873,6 +873,14 @@ def IsCheckmate (pos : Position) : Prop :=
   then valid_moves pos = []
   else False
 
+/-- This considers a stalemate to be a win for the side
+  who doesn't have the move. -/
+inductive ForcedNotLose : Side → Position → Prop where
+| Checkmate (p : Position) : IsCheckmate p → ForcedNotLose p.turn.other p
+| Self (p : Position) (m : ChessMove) (p1 : Position) :
+   (m, p1) ∈ valid_moves p → ForcedNotLose p.turn p1 → ForcedNotLose p.turn p
+| Opponent (p : Position) :
+   (∀ vm ∈ valid_moves p, ForcedNotLose p.turn.other vm.snd) → ForcedNotLose p.turn.other p
 /--
  `ForcedWin side pos` means than `side` has a forced win
  at position `pos`.
@@ -882,9 +890,9 @@ inductive ForcedWin : Side → Position → Prop where
 | Self (p : Position) (m : ChessMove) (p1 : Position) :
    (m, p1) ∈ valid_moves p → ForcedWin p.turn p1 → ForcedWin p.turn p
 | Opponent (p : Position) :
-   (∀ vm ∈ valid_moves p, ForcedWin p.turn.other vm.snd) → ForcedWin p.turn.other p
-   -- FIXME: This is wrong because it considers a stalemate to be a win for the side
-   --        who doesn't have the move.
+   (∀ vm ∈ valid_moves p, ForcedWin p.turn.other vm.snd) → valid_moves p ≠ ∅ → ForcedWin p.turn.other p
+
+
 --------------
 
 def make_move (pos : Position) (cm : ChessMove) : Option Position :=

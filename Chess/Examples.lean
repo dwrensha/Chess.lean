@@ -4,7 +4,7 @@ import Chess.Widgets
 
 
 theorem black_wins_back_rank :
-    ForcedWin .black
+    ForcedNotLose .black
       ╔════════════════╗
       ║░░▓▓░░▓▓♜]▓▓♚}▓▓║
       ║♟]░░▓▓░░▓▓♟]♟]♟]║
@@ -19,7 +19,7 @@ theorem black_wins_back_rank :
   checkmate
 
 theorem white_wins_promotion_back_rank :
-    ForcedWin .white
+    ForcedNotLose .white
       ╔════════════════╗
       ║░░▓▓░░▓▓░░▓▓♚]▓▓║
       ║♟]░░♙]░░▓▓♟]♟]♟]║
@@ -34,7 +34,7 @@ theorem white_wins_promotion_back_rank :
   checkmate
 
 theorem black_wins_promotion :
-    ForcedWin .black
+    ForcedNotLose .black
       ╔════════════════╗
       ║░░▓▓░░▓▓░░▓▓♚}▓▓║
       ║♟]░░▓▓░░▓▓♟]♟]♟]║
@@ -56,7 +56,7 @@ Timman-Short 1990
 (from https://en.wikipedia.org/wiki/Smothered_mate)
 -/
 theorem smothered_mate :
-    ForcedWin .white
+    ForcedNotLose .white
       ╔════════════════╗
       ║▓▓░░▓▓░░♜]░░▓▓♚]║
       ║♟]▓▓♟]♖]♙]▓▓♟]♟]║
@@ -67,7 +67,7 @@ theorem smothered_mate :
       ║♙]░░▓▓░░♙]♙]▓▓♙]║
       ║░░▓▓░░▓▓░░▓▓♔}▓▓║
       ╚════════════════╝ := by
-  with_panel_widgets [ForcedWinWidget]
+  with_panel_widgets [ForcedNotLoseWidget]
     move "Nf7"
     opponent_move
     move "Nh6"
@@ -81,7 +81,7 @@ Gunnar Gundersen vs. A H Faul
 1-0 Pietzcker Christmas Tournament Melbourne AUS 1928
 -/
 theorem en_passant_mate :
-    ForcedWin .white
+    ForcedNotLose .white
     ╔════════════════╗
     ║♜]░░♝]♛]▓▓♜]▓▓░░║
     ║♟]♟]░░▓▓♞]▓▓░░▓▓║
@@ -92,7 +92,7 @@ theorem en_passant_mate :
     ║♙]♙]▓▓░░▓▓♙]♙]░░║
     ║♖]▓▓♗]▓▓♔}▓▓░░♖]║
     ╚════════════════╝:= by
-  with_panel_widgets [ForcedWinWidget]
+  with_panel_widgets [ForcedNotLoseWidget]
     move "h×g6"
     checkmate
 

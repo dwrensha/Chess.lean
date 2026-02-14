@@ -23,8 +23,8 @@ def callNextMoveScript (input : String): IO String := do
 elab "guess_next_move" : tactic => do
   -- Get the current goal
   let goal ← getMainGoal
-  -- Extract the position from a `ForcedWin` goal
-  let posOpt ← extractPositionFromForcedWinGoal goal
+  -- Extract the position from a `ForcedNotLose` goal
+  let posOpt ← extractPositionFromForcedNotLoseGoal goal
   match posOpt with
   | some posVal =>
     -- Convert the position to a FEN string
@@ -45,4 +45,4 @@ elab "guess_next_move" : tactic => do
 
       -- Execute the parsed tactic
       evalTactic stx
-  | none => throwError "No ForcedWin goal found or invalid goal type."
+  | none => throwError "No ForcedNotLose goal found or invalid goal type."

@@ -5,7 +5,7 @@ import Chess.NextMoveTactic
 
 
 theorem smothered_mate' :
-    ForcedWin .white
+    ForcedNotLose .white
       ╔════════════════╗
       ║▓▓░░▓▓░░♜]░░▓▓♚]║
       ║♟]▓▓♟]♖]♙]▓▓♟]♟]║
@@ -16,7 +16,7 @@ theorem smothered_mate' :
       ║♙]░░▓▓░░♙]♙]▓▓♙]║
       ║░░▓▓░░▓▓░░▓▓♔}▓▓║
       ╚════════════════╝ := by
-  with_panel_widgets [ForcedWinWidget]
+  with_panel_widgets [ForcedNotLoseWidget]
     guess_next_move
     opponent_move
     guess_next_move

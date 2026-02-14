@@ -22,8 +22,15 @@ set_option linter.hashCommand false
 
 set_option maxRecDepth 1000
 theorem position_with_218_moves :
-    ForcedWin .black
+    ForcedNotLose .black
       example_5 := by
-  with_panel_widgets [ForcedWinWidget]
+  with_panel_widgets [ForcedNotLoseWidget]
     opponent_move -- at this point 218 goals are opened
     all_goals sorry
+
+theorem position_with_218_moves₀ :
+    ForcedNotLose .white
+      example_5 := by
+  with_panel_widgets [ForcedNotLoseWidget]
+    move "Qc2"
+    opponent_move
