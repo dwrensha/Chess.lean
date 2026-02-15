@@ -133,10 +133,27 @@ def extractPositionFromForcedNotLoseGoal (g : MVarId) : MetaM (Option _root_.Pos
     else
       return none
 
+/-- Extracts the position from a goal of type `ForcedWin`. -/
+def extractPositionFromForcedWinGoal (g : MVarId) : MetaM (Option _root_.Position) := do
+  g.withContext do
+    -- Get the goal's type
+    let type ← g.getType
+    -- Extract the function name and arguments using `getAppFnArgs`
+    let (fn, args) := type.getAppFnArgs
+    -- Check if the goal is of type `ForcedNotLose`
+    if fn == ``ForcedWin && args.size == 2 then
+      -- Extract the `Position` argument
+      let posExpr := args[1]!  -- The second argument should be the Position
+      -- Try to interpret `posExpr` as a `Position`
+      let posVal ← unsafe (evalExpr _root_.Position (mkConst ``_root_.Position) posExpr)
+      return some posVal
+    else
+      return none
+
 open scoped Jsx in
 /-- The RPC method for displaying FEN for ForcedNotLose (Side → Position → Prop). -/
 @[server_rpc_method]
-def forced_win_rpc (props : PanelWidgetProps) : RequestM (RequestTask Html) :=
+def forced_not_lose_rpc (props : PanelWidgetProps) : RequestM (RequestTask Html) :=
   RequestM.asTask do
     let html : Option Html ← (do
       if props.goals.isEmpty then
@@ -160,10 +177,41 @@ def forced_win_rpc (props : PanelWidgetProps) : RequestM (RequestTask Html) :=
     | none => return <span>No ForcedNotLose goal found or invalid type.</span>
     | some inner => return inner
 
+open scoped Jsx in
+/-- The RPC method for displaying FEN for ForcedNotLose (Side → Position → Prop). -/
+@[server_rpc_method]
+def forced_win_rpc (props : PanelWidgetProps) : RequestM (RequestTask Html) :=
+  RequestM.asTask do
+    let html : Option Html ← (do
+      if props.goals.isEmpty then
+        return none  -- No goals, return none
+      else
+        let some g := props.goals[0]? | unreachable!
+        g.ctx.val.runMetaM {} do
+          -- Use the extractPositionFromForcedNotLoseGoal function
+          let posOpt ← extractPositionFromForcedWinGoal g.mvarId
+          match posOpt with
+          | some posVal =>
+            -- Create props for the ChessPositionWidget
+            let widgetProps : ChessPositionWidgetProps := { position? := some posVal }
+            let board_html := Html.ofComponent ChessPositionWidget widgetProps #[]
+            let fen_str := fenFromPosition posVal
+            let fen_html := <span>{Html.text fen_str}</span>
+            let combined_html := Html.element "div" #[] #[board_html, fen_html]
+            return some <| combined_html
+          | none => return none)
+    match html with
+    | none => return <span>No ForcedWin goal found or invalid type.</span>
+    | some inner => return inner
 
 end Chess
 
 @[widget_module]
 def ForcedNotLoseWidget :  Component PanelWidgetProps  :=
+    mk_rpc_widget% Chess.forced_not_lose_rpc
+syntax (name := forcedNotLoseWidget) "#forced_not_lose_widget " term : command
+
+@[widget_module]
+def ForcedWinWidget :  Component PanelWidgetProps  :=
     mk_rpc_widget% Chess.forced_win_rpc
 syntax (name := forcedWinWidget) "#forced_win_widget " term : command

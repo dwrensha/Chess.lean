@@ -33,21 +33,19 @@ set_option linter.hashCommand false
 theorem forcedWinDemo :
     ForcedWin .white
       example_5 := by
-  with_panel_widgets [ForcedNotLoseWidget]
-    moveNotStalemate "Qb2"
-    checkmateNotStalemate
--- TODO: rename "checkmate" to "checkmateNotLose" and "checkmateNotStalemate" to "checkmate"
-
+  with_panel_widgets [ForcedWinWidget]
+    move "Qb2"
+    checkmate
 
 theorem babsonNotStalemate :
     ForcedWin .white
       babsonTask := by
   with_panel_widgets [ForcedNotLoseWidget]
-    moveNotStalemate "a7"
+    move "a7"
     show ForcedWin _ _
     have := @ForcedWin.Opponent babsonTask
 
-    opponent_moveNotStalemate
+    opponent_move
     sorry
     sorry
     sorry
@@ -69,26 +67,26 @@ theorem babson :
     ForcedNotLose .white
       babsonTask := by
   with_panel_widgets [ForcedNotLoseWidget]
-    move "a7"
+    moveNotLose "a7"
     show ForcedNotLose .white _
     have := @ForcedWin .white
     --sorry -- valid move exists
-    opponent_move
-    · move "R×f4"
-      checkmate
+    opponent_moveNotLose
+    · moveNotLose "R×f4"
+      checkmateNotLose
     · sorry
     sorry
     sorry
-    · move "R×f4"
-      checkmate
+    · moveNotLose "R×f4"
+      checkmateNotLose
     sorry
     sorry
-    · move "R×f4"
-      checkmate
-    · move "R×f4"
-      checkmate
-    · move "R×f4"
-      checkmate
+    · moveNotLose "R×f4"
+      checkmateNotLose
+    · moveNotLose "R×f4"
+      checkmateNotLose
+    · moveNotLose "R×f4"
+      checkmateNotLose
     sorry
     sorry
     sorry
@@ -101,8 +99,8 @@ theorem position_with_218_moves :
     ForcedNotLose .white
       example_5 := by
   with_panel_widgets [ForcedNotLoseWidget]
-    move "Qa2"
-    checkmate
+    moveNotLose "Qa2"
+    checkmateNotLose
 
 def example_6 :=
     ╔════════════════╗
@@ -121,11 +119,11 @@ theorem position :
     ForcedNotLose .white
       example_6 := by
   with_panel_widgets [ForcedNotLoseWidget]
-    move "Rg2"
-    opponent_move
+    moveNotLose "Rg2"
+    opponent_moveNotLose
     all_goals
-    · move "Rh1"
-      checkmate
+    · moveNotLose "Rh1"
+      checkmateNotLose
 
 
 def example_7 :=
@@ -179,9 +177,9 @@ theorem white_can_force_win_or_draw' :
     ForcedNotLose .white
       chatGPT_startingPosition := by
   with_panel_widgets [ForcedNotLoseWidget]
-    move "e4"
+    moveNotLose "e4"
     have : 2 + 2 = 4 := by exact rfl
-    opponent_move
+    opponent_moveNotLose
     ·
       sorry
     sorry
@@ -210,8 +208,8 @@ theorem position7 :
     ForcedNotLose .white
       example_7 := by
   with_panel_widgets [ForcedNotLoseWidget]
-    move "Rb4"
-    opponent_move -- really, a stalemate!
+    moveNotLose "Rb4"
+    opponent_moveNotLose -- really, a stalemate!
 
 theorem position7' :
     ForcedWin .white
@@ -224,19 +222,19 @@ theorem position7₀ :
     ForcedNotLose .white
       example_7 := by
   with_panel_widgets [ForcedNotLoseWidget]
-    move "Rc4"
-    opponent_move
-    move "Rd5"
-    opponent_move
-    move "Rc1"
-    checkmate
+    moveNotLose "Rc4"
+    opponent_moveNotLose
+    moveNotLose "Rd5"
+    opponent_moveNotLose
+    moveNotLose "Rc1"
+    checkmateNotLose
 
 theorem position7₀_malikProof :
     ForcedNotLose .white
       example_7 := by
   with_panel_widgets [ForcedNotLoseWidget]
-    move "Kb3"
-    opponent_move
+    moveNotLose "Kb3"
+    opponent_moveNotLose
     unfold example_7
-    move "Ra1"
-    checkmate
+    moveNotLose "Ra1"
+    checkmateNotLose

@@ -6,16 +6,16 @@ section tactics
 
 open Lean.Meta Lean.Elab.Tactic
 
-syntax "move " term : tactic
+syntax "moveNotLose " term : tactic
 
-elab_rules : tactic | `(tactic| move $t:term) => withMainContext do
+elab_rules : tactic | `(tactic| moveNotLose $t:term) => withMainContext do
   let g ← getMainGoal
   let goal_type ← whnfR (← g.getType)
   let .app (.app (.const ``ForcedNotLose _) side) pos := goal_type
-    | throwError "'move' tactic expects ForcedNotLose goal"
+    | throwError "moveNotLose' tactic expects ForcedNotLose goal"
   let posTurn ← whnfR (← mkAppM ``Position.turn #[pos])
   if not (← Lean.Meta.isExprDefEq side posTurn) then
-    throwError "It is {side}'s turn to move, try to use the `opponent_move` tactic instead of `move`"
+    throwError "It is {side}'s turn to move, try to use the `opponent_moveNotLose` tactic instead of `moveNotLose`"
   let t ← Lean.Elab.Term.elabTerm t none
   let cm ← whnf (← mkAppM ``ChessMove.ofString #[t])
   let .app (.app (.const ``Option.some _) _) cm := cm
@@ -32,17 +32,17 @@ elab_rules : tactic | `(tactic| move $t:term) => withMainContext do
   evalTactic (← `(tactic| refine ForcedNotLose.Self $pos_stx $mv_stx $pos1_stx (by decide) ?_))
   evalTactic (← `(tactic| dsimp [game_start, Side.other, Position.set]))
 
-syntax "opponent_move" : tactic
+syntax "opponent_moveNotLose" : tactic
 
-elab_rules : tactic | `(tactic| opponent_move) => withMainContext do
+elab_rules : tactic | `(tactic| opponent_moveNotLose) => withMainContext do
   let g ← getMainGoal
   let goal_type ← whnfR (← g.getType)
   let .app (.app (.const ``ForcedNotLose _) side) pos := goal_type
-    | throwError "'opponent_move' tactic expects ForcedNotLose goal"
+    | throwError "'opponent_moveNotLose' tactic expects ForcedNotLose goal"
   let pos_stx ← Lean.Elab.Term.exprToSyntax pos
   let posTurn ← whnfR (← mkAppM ``Position.turn #[pos])
   if (← Lean.Meta.isExprDefEq side posTurn) then
-    throwError "It is {side}'s turn to move, try to use the `move` tactic instead of `opponent_move`"
+    throwError "It is {side}'s turn to move, try to use the `moveNotLose` tactic instead of `opponent_moveNotLose`"
   evalTactic (← `(tactic| apply ForcedNotLose.Opponent $pos_stx))
   evalTactic (← `(tactic| rw [←List.forall_iff_forall_mem]))
   evalTactic (← `(tactic| dsimp [do_simple_move, Side.other, Position.set]))
@@ -50,13 +50,13 @@ elab_rules : tactic | `(tactic| opponent_move) => withMainContext do
   for g in (←get).goals do
     g.setUserName .anonymous
 
-syntax "checkmate" : tactic
+syntax "checkmateNotLose" : tactic
 
-elab_rules : tactic | `(tactic| checkmate) => withMainContext do
+elab_rules : tactic | `(tactic| checkmateNotLose) => withMainContext do
   let g ← getMainGoal
   let goal_type ← whnfR (← g.getType)
   let .app (.app (.const ``ForcedNotLose _) side) pos := goal_type
-    | throwError "'checkmate' tactic expects ForcedNotLose goal"
+    | throwError "'checkmateNotLose' tactic expects ForcedNotLose goal"
   let posTurn ← whnfR (← mkAppM ``Position.turn #[pos])
   if (← Lean.Meta.isExprDefEq side posTurn) then
     throwError "It is {side}'s turn to move, try to use the `move` tactic instead to make a move that checkmates"
@@ -66,13 +66,13 @@ elab_rules : tactic | `(tactic| checkmate) => withMainContext do
 
 
 
-syntax "moveNotStalemate " term : tactic
+syntax "move " term : tactic
 
-elab_rules : tactic | `(tactic| moveNotStalemate $t:term) => withMainContext do
+elab_rules : tactic | `(tactic| move $t:term) => withMainContext do
   let g ← getMainGoal
   let goal_type ← whnfR (← g.getType)
   let .app (.app (.const ``ForcedWin _) side) pos := goal_type
-    | throwError "'moveNotStalemate' tactic expects ForcedWin goal"
+    | throwError "'move' tactic expects ForcedWin goal"
   let posTurn ← whnfR (← mkAppM ``Position.turn #[pos])
   if not (← Lean.Meta.isExprDefEq side posTurn) then
     throwError "It is {side}'s turn to move, try to use the `opponent_move` tactic instead of `move`"
@@ -93,13 +93,13 @@ elab_rules : tactic | `(tactic| moveNotStalemate $t:term) => withMainContext do
   evalTactic (← `(tactic| dsimp [game_start, Side.other, Position.set]))
 
 
-syntax "opponent_moveNotStalemate" : tactic
+syntax "opponent_move" : tactic
 
-elab_rules : tactic | `(tactic| opponent_moveNotStalemate) => withMainContext do
+elab_rules : tactic | `(tactic| opponent_move) => withMainContext do
   let g ← getMainGoal
   let goal_type ← whnfR (← g.getType)
   let .app (.app (.const ``ForcedWin _) side) pos := goal_type
-    | throwError "'opponent_moveNotStalemate' tactic expects ForcedWin goal"
+    | throwError "'opponent_move' tactic expects ForcedWin goal"
   let pos_stx ← Lean.Elab.Term.exprToSyntax pos
   let posTurn ← whnfR (← mkAppM ``Position.turn #[pos])
   if (← Lean.Meta.isExprDefEq side posTurn) then
@@ -112,16 +112,16 @@ elab_rules : tactic | `(tactic| opponent_moveNotStalemate) => withMainContext do
     g.setUserName .anonymous
 
 
-syntax "checkmateNotStalemate" : tactic
+syntax "checkmate" : tactic
 
-elab_rules : tactic | `(tactic| checkmateNotStalemate) => withMainContext do
+elab_rules : tactic | `(tactic| checkmate) => withMainContext do
   let g ← getMainGoal
   let goal_type ← whnfR (← g.getType)
   let .app (.app (.const ``ForcedWin _) side) pos := goal_type
-    | throwError "'checkmateNotStalemate' tactic expects ForcedWin goal"
+    | throwError "'checkmate' tactic expects ForcedWin goal"
   let posTurn ← whnfR (← mkAppM ``Position.turn #[pos])
   if (← Lean.Meta.isExprDefEq side posTurn) then
-    throwError "It is {side}'s turn to move, try to use the `moveNotStalemate` tactic instead to make a move that checkmates"
+    throwError "It is {side}'s turn to move, try to use the `move` tactic instead to make a move that checkmates"
 
   let pos_stx ← Lean.Elab.Term.exprToSyntax pos
   evalTactic (← `(tactic| exact ForcedWin.Checkmate $pos_stx (by decide)))
