@@ -1,9 +1,11 @@
 import Chess.Tactics
 
-/-- error: It is Side.black's turn to move, try to use the `move` tactic instead of `opponent_move` -/
+/-- error:
+It is Side.black's turn to move, try to use the `moveNotLose` tactic instead of `opponent_moveNotLose`
+-/
 #guard_msgs in
 theorem black_wins_back_rank :
-    ForcedWin .black
+    ForcedNotLose .black
       ╔════════════════╗
       ║░░▓▓░░▓▓♜]▓▓♚}▓▓║
       ║♟]░░▓▓░░▓▓♟]♟]♟]║
@@ -14,17 +16,19 @@ theorem black_wins_back_rank :
       ║♙]♙]♙]▓▓░░♙]♙]♙]║
       ║▓▓░░▓▓░░▓▓░░♔]░░║
       ╚════════════════╝ := by
-  opponent_move
-  checkmate
+  opponent_moveNotLose
+  checkmateNotLose
 
-/-- error: It is Side.white's turn to move, try to use the `opponent_move` tactic instead of `move` -/
-#guard_msgs in
-/--
+/-
 Timman-Short 1990
 (from https://en.wikipedia.org/wiki/Smothered_mate)
 -/
+/--
+error: It is Side.white's turn to move, try to use the `opponent_moveNotLose` tactic instead of `moveNotLose`
+-/
+#guard_msgs in
 theorem smothered_mate :
-    ForcedWin .white
+    ForcedNotLose .white
       ╔════════════════╗
       ║▓▓░░▓▓░░♜]░░▓▓♚]║
       ║♟]▓▓♟]♖]♙]▓▓♟]♟]║
@@ -35,13 +39,13 @@ theorem smothered_mate :
       ║♙]░░▓▓░░♙]♙]▓▓♙]║
       ║░░▓▓░░▓▓░░▓▓♔}▓▓║
       ╚════════════════╝ := by
-    move "Nf7"
-    move "Nh6"
+    moveNotLose "Nf7"
+    moveNotLose "Nh6"
 
 /-- error: It is Side.white's turn to move, try to use the `move` tactic instead to make a move that checkmates -/
 #guard_msgs in
 theorem white_wins_promotion_back_rank :
-    ForcedWin .white
+    ForcedNotLose .white
       ╔════════════════╗
       ║░░▓▓░░▓▓░░▓▓♚]▓▓║
       ║♟]░░♙]░░▓▓♟]♟]♟]║
@@ -52,4 +56,4 @@ theorem white_wins_promotion_back_rank :
       ║♙]♙]░░▓▓░░♙]♙]♙]║
       ║▓▓░░▓▓░░▓▓░░♔}░░║
       ╚════════════════╝ := by
-  checkmate
+  checkmateNotLose

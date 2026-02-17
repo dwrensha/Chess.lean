@@ -873,6 +873,26 @@ def IsCheckmate (pos : Position) : Prop :=
   then valid_moves pos = []
   else False
 
+/-- This considers a stalemate to be a win for the side
+  who doesn't have the move. -/
+inductive ForcedNotLose : Side → Position → Prop where
+| Checkmate (p : Position) : IsCheckmate p → ForcedNotLose p.turn.other p
+| Self (p : Position) (m : ChessMove) (p1 : Position) :
+   (m, p1) ∈ valid_moves p → ForcedNotLose p.turn p1 → ForcedNotLose p.turn p
+| Opponent (p : Position) :
+   (∀ vm ∈ valid_moves p, ForcedNotLose p.turn.other vm.snd) → ForcedNotLose p.turn.other p
+
+inductive ForcedNotLose' (s : Side) (p : Position) : Prop where
+| Checkmate (h : s = p.turn.other) :
+    IsCheckmate p → ForcedNotLose' s p
+| Opponent (h : s = p.turn.other) :
+  (∀ vm ∈ valid_moves p, ForcedNotLose p.turn.other vm.snd) →
+  ForcedNotLose' s p
+| Self (h : s = p.turn)
+  (m : ChessMove) (p1 : Position) :
+  (m, p1) ∈ valid_moves p → ForcedNotLose s p1 →
+  ForcedNotLose' s p
+
 /--
  `ForcedWin side pos` means than `side` has a forced win
  at position `pos`.
@@ -882,9 +902,28 @@ inductive ForcedWin : Side → Position → Prop where
 | Self (p : Position) (m : ChessMove) (p1 : Position) :
    (m, p1) ∈ valid_moves p → ForcedWin p.turn p1 → ForcedWin p.turn p
 | Opponent (p : Position) :
-   (∀ vm ∈ valid_moves p, ForcedWin p.turn.other vm.snd) → ForcedWin p.turn.other p
-   -- FIXME: This is wrong because it considers a stalemate to be a win for the side
-   --        who doesn't have the move.
+   (∀ vm ∈ valid_moves p, ForcedWin p.turn.other vm.snd) → valid_moves p ≠ ∅ → ForcedWin p.turn.other p
+
+inductive ForcedWinIn : Nat → Side → Position → Prop where
+| Checkmate (p : Position) : IsCheckmate p → ForcedWinIn 0 p.turn.other p
+| Self (n : Nat) (p : Position) (m : ChessMove) (p1 : Position) :
+   (m, p1) ∈ valid_moves p → ForcedWinIn n p.turn p1 → ForcedWinIn n.succ p.turn p
+| Opponent (n : Nat) (p : Position) :
+   (∀ vm ∈ valid_moves p, ForcedWinIn n p.turn.other vm.snd) → valid_moves p ≠ ∅ →
+    ForcedWinIn n p.turn.other p
+
+def forcedWinIn (n : Nat) (s : Side) (p : Position) : Bool :=
+  match n with
+  | 0 => IsCheckmate p && (p.turn ≠ s)
+  | n+1 =>
+      match p.turn == s with
+      | true =>
+          -- ∃ move leading to forced win in n
+          (valid_moves p).any (fun p1 => forcedWinIn n s p1.2) -- use p1.1 too!
+      | false =>
+          -- ∀ moves lead to forced win in n
+          (valid_moves p).all (fun p1 => forcedWinIn n s p1.2)
+
 --------------
 
 def make_move (pos : Position) (cm : ChessMove) : Option Position :=

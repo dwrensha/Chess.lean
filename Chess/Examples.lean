@@ -4,7 +4,7 @@ import Chess.Widgets
 
 
 theorem black_wins_back_rank :
-    ForcedWin .black
+    ForcedNotLose .black
       ╔════════════════╗
       ║░░▓▓░░▓▓♜]▓▓♚}▓▓║
       ║♟]░░▓▓░░▓▓♟]♟]♟]║
@@ -15,11 +15,11 @@ theorem black_wins_back_rank :
       ║♙]♙]♙]▓▓░░♙]♙]♙]║
       ║▓▓░░▓▓░░▓▓░░♔]░░║
       ╚════════════════╝ := by
-  move "Re1"
-  checkmate
+  moveNotLose "Re1"
+  checkmateNotLose
 
 theorem white_wins_promotion_back_rank :
-    ForcedWin .white
+    ForcedNotLose .white
       ╔════════════════╗
       ║░░▓▓░░▓▓░░▓▓♚]▓▓║
       ║♟]░░♙]░░▓▓♟]♟]♟]║
@@ -30,11 +30,11 @@ theorem white_wins_promotion_back_rank :
       ║♙]♙]░░▓▓░░♙]♙]♙]║
       ║▓▓░░▓▓░░▓▓░░♔}░░║
       ╚════════════════╝ := by
-  move "c8=R"
-  checkmate
+  moveNotLose "c8=R"
+  checkmateNotLose
 
 theorem black_wins_promotion :
-    ForcedWin .black
+    ForcedNotLose .black
       ╔════════════════╗
       ║░░▓▓░░▓▓░░▓▓♚}▓▓║
       ║♟]░░▓▓░░▓▓♟]♟]♟]║
@@ -45,8 +45,8 @@ theorem black_wins_promotion :
       ║♙]♙]░░▓▓♟]♙]♔]♙]║
       ║▓▓░░▓▓░░▓▓♘]♖]♖]║
       ╚════════════════╝ := by
-  move "e1=N"
-  checkmate
+  moveNotLose "e1=N"
+  checkmateNotLose
 
 set_option linter.hashCommand false
 #widget ChessPositionWidget with { position? := some <| get_pos black_wins_promotion : ChessPositionWidgetProps }
@@ -56,7 +56,7 @@ Timman-Short 1990
 (from https://en.wikipedia.org/wiki/Smothered_mate)
 -/
 theorem smothered_mate :
-    ForcedWin .white
+    ForcedNotLose .white
       ╔════════════════╗
       ║▓▓░░▓▓░░♜]░░▓▓♚]║
       ║♟]▓▓♟]♖]♙]▓▓♟]♟]║
@@ -67,21 +67,21 @@ theorem smothered_mate :
       ║♙]░░▓▓░░♙]♙]▓▓♙]║
       ║░░▓▓░░▓▓░░▓▓♔}▓▓║
       ╚════════════════╝ := by
-  with_panel_widgets [ForcedWinWidget]
-    move "Nf7"
-    opponent_move
-    move "Nh6"
-    opponent_move
-    move "Qg8"
-    opponent_move
-    move "Nf7"
-    checkmate
+  with_panel_widgets [ForcedNotLoseWidget]
+    moveNotLose "Nf7"
+    opponent_moveNotLose
+    moveNotLose "Nh6"
+    opponent_moveNotLose
+    moveNotLose "Qg8"
+    opponent_moveNotLose
+    moveNotLose "Nf7"
+    checkmateNotLose
 /--
 Gunnar Gundersen vs. A H Faul
 1-0 Pietzcker Christmas Tournament Melbourne AUS 1928
 -/
 theorem en_passant_mate :
-    ForcedWin .white
+    ForcedNotLose .white
     ╔════════════════╗
     ║♜]░░♝]♛]▓▓♜]▓▓░░║
     ║♟]♟]░░▓▓♞]▓▓░░▓▓║
@@ -92,9 +92,9 @@ theorem en_passant_mate :
     ║♙]♙]▓▓░░▓▓♙]♙]░░║
     ║♖]▓▓♗]▓▓♔}▓▓░░♖]║
     ╚════════════════╝:= by
-  with_panel_widgets [ForcedWinWidget]
-    move "h×g6"
-    checkmate
+  with_panel_widgets [ForcedNotLoseWidget]
+    moveNotLose "h×g6"
+    checkmateNotLose
 
 /-
 set_option maxHeartbeats 3000000 in
